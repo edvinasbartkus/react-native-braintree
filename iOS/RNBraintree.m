@@ -45,13 +45,13 @@ RCT_EXPORT_METHOD(showPaymentViewController:(RCTResponseSenderBlock)callback)
     dispatch_async(dispatch_get_main_queue(), ^{
         BTDropInViewController *dropInViewController = [[BTDropInViewController alloc] initWithAPIClient:self.braintreeClient];
         dropInViewController.delegate = self;
-        
+
         dropInViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(userDidCancelPayment)];
-        
+
         self.callback = callback;
-        
+
         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:dropInViewController];
-        
+
         self.reactRoot = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
         [self.reactRoot presentViewController:navigationController animated:YES completion:nil];
     });
@@ -60,10 +60,10 @@ RCT_EXPORT_METHOD(showPaymentViewController:(RCTResponseSenderBlock)callback)
 RCT_EXPORT_METHOD(showPayPalViewController:(RCTResponseSenderBlock)callback)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        
+
         BTPayPalDriver *payPalDriver = [[BTPayPalDriver alloc] initWithAPIClient:self.braintreeClient];
         payPalDriver.viewControllerPresentingDelegate = self;
-        
+
         [payPalDriver authorizeAccountWithCompletion:^(BTPayPalAccountNonce *tokenizedPayPalAccount, NSError *error) {
             NSArray *args = @[];
             if ( error == nil ) {
@@ -79,12 +79,13 @@ RCT_EXPORT_METHOD(showPayPalViewController:(RCTResponseSenderBlock)callback)
 RCT_EXPORT_METHOD(getCardNonce: (NSString *)cardNumber
                   expirationMonth: (NSString *)expirationMonth
                   expirationYear: (NSString *)expirationYear
+                  cvv: (NSString *)cvv
                   callback: (RCTResponseSenderBlock)callback
                   )
 {
     BTCardClient *cardClient = [[BTCardClient alloc] initWithAPIClient: self.braintreeClient];
-    BTCard *card = [[BTCard alloc] initWithNumber:cardNumber expirationMonth:expirationMonth expirationYear:expirationYear cvv:nil];
-    
+    BTCard *card = [[BTCard alloc] initWithNumber:cardNumber expirationMonth:expirationMonth expirationYear:expirationYear cvv:cvv];
+
     [cardClient tokenizeCard:card
                   completion:^(BTCardNonce *tokenizedCard, NSError *error) {
 
@@ -100,7 +101,7 @@ RCT_EXPORT_METHOD(getCardNonce: (NSString *)cardNumber
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-    
+
     if ([url.scheme localizedCaseInsensitiveCompare:URLScheme] == NSOrderedSame) {
         return [BTAppSwitch handleOpenURL:url sourceApplication:sourceApplication];
     }
@@ -127,7 +128,7 @@ RCT_EXPORT_METHOD(getCardNonce: (NSString *)cardNumber
 }
 
 - (void)dropInViewController:(BTDropInViewController *)viewController didSucceedWithTokenization:(BTPaymentMethodNonce *)paymentMethodNonce {
-    
+
     self.callback(@[[NSNull null],paymentMethodNonce.nonce]);
     [viewController dismissViewControllerAnimated:YES completion:nil];
 }

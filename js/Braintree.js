@@ -36,11 +36,11 @@ var Braintree = {
 		});
 	},
 
-    getCardNonce(cardNumber, expirationMonth, expirationYear) {
+    getCardNonce(cardNumber, expirationMonth, expirationYear, cvv) {
     	return new Promise(function(resolve, reject) {
-    		RNBraintree.getCardNonce(cardNumber, expirationMonth, expirationYear, function(err, nonce) {
+    		RNBraintree.getCardNonce(cardNumber, expirationMonth, expirationYear, cvv, function(err, nonce) {
     			nonce != null ? resolve(nonce) : reject(err);
-    		});	
+    		});
     	});
     }
 
